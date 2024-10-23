@@ -1,9 +1,10 @@
 const express = require("express");
 const cors = require("cors");
+require("dotenv").config();
 
 const app = express();
 
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 3000;
 app.use(cors({origin:true}));
 
 app.use(cors());
@@ -13,7 +14,7 @@ const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 // const uri = "mongodb://localhost:27017/";
 
-const uri = "mongodb+srv://product_buy_sell_user:Pq13nX56kkLm@cluster0.oeee7.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.oeee7.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -32,6 +33,8 @@ async function run() {
     const categoriesCollection = client.db("productBuySell").collection("categories");
     // const productsCollection = client.db("productBuySell").collection("products");
     const carsCollection = client.db("productBuySell").collection("cars");
+
+    const usersCollection = client.db("productBuySell").collection("users");
 
 
     app.get("/categories", async (req, res) => {
@@ -52,13 +55,15 @@ async function run() {
     });
     app.get("/category/:id", async (req, res) => {
       const id = req.params.id;
-      console.log(id);
       const query = { _id: new ObjectId(id) };
       const result = await categoriesCollection.findOne(query);
-      console.log(result);
       res.send(result);
     });
-
+    app.post("/user", async (req, res) => {
+      const user = req.body;
+      const result = await usersCollection.insertOne(user);
+      res.send(result);
+    });
     app.post("/category", async (req, res) => {
       const category = req.body;
       const result = await categoriesCollection.insertOne(category);
